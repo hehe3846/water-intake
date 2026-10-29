@@ -1,0 +1,995 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HydroTrack | Water Tracker</title>
+
+  <style>
+    :root {
+      --blue: #2589e8;
+      --dark-blue: #1262b5;
+      --light-blue: #eaf6ff;
+      --text: #18334d;
+      --muted: #72869a;
+      --white: #ffffff;
+      --background: #f5faff;
+      --border: #e2edf6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 7%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--dark-blue);
+    }
+
+    .logo-icon {
+      background: var(--light-blue);
+      border-radius: 14px;
+      padding: 9px;
+      font-size: 25px;
+    }
+
+    .date {
+      color: var(--muted);
+      font-size: 14px;
+      text-align: right;
+    }
+
+    main {
+      max-width: 1100px;
+      padding: 42px 22px 60px;
+      margin: auto;
+    }
+
+    .welcome {
+      margin-bottom: 28px;
+    }
+
+    .welcome h1 {
+      font-size: clamp(28px, 5vw, 40px);
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+
+    .welcome p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 8px 30px rgba(31, 93, 145, 0.045);
+    }
+
+    .card-title {
+      font-size: 19px;
+      font-weight: 750;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .progress-area {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin: 28px 0;
+    }
+
+    .water-circle {
+      width: 190px;
+      height: 190px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: 9px solid #e4f3ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      background: #f5fbff;
+    }
+
+    .water-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(0deg, #2489e8, #70c9ff);
+      transition: height 0.6s ease;
+      border-radius: 0;
+      opacity: 0.9;
+    }
+
+    .water-fill::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: -10%;
+      width: 120%;
+      height: 18px;
+      border-radius: 50%;
+      background: #70c9ff;
+    }
+
+    .circle-content {
+      z-index: 1;
+      text-align: center;
+      color: var(--text);
+      background: rgba(255,255,255,0.82);
+      padding: 12px;
+      border-radius: 16px;
+      min-width: 110px;
+    }
+
+    .percentage {
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .circle-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .stats {
+      flex: 1;
+    }
+
+    .stat-number {
+      font-size: 30px;
+      font-weight: 800;
+      margin: 5px 0;
+    }
+
+    .stat-number span {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 17px 0;
+    }
+
+    .progress-track {
+      height: 10px;
+      background: #eaf3fa;
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 18px 0 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2589e8, #72c8ff);
+      border-radius: 20px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-caption {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .goal-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .goal-row label {
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    input {
+      min-width: 0;
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      font: inherit;
+      color: var(--text);
+      background: #fbfdff;
+    }
+
+    input:focus {
+      border-color: var(--blue);
+    }
+
+    .goal-row input {
+      max-width: 120px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      transition: transform 0.15s, background 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .primary-btn {
+      background: var(--blue);
+      color: white;
+      padding: 12px 17px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .primary-btn:hover {
+      background: var(--dark-blue);
+    }
+
+    .quick-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .quick-btn {
+      background: var(--light-blue);
+      color: var(--dark-blue);
+      border: 1px solid #d8edff;
+      border-radius: 14px;
+      padding: 14px 8px;
+      font-weight: 750;
+    }
+
+    .quick-btn:hover {
+      background: #d8edff;
+    }
+
+    .quick-btn .cup {
+      display: block;
+      font-size: 23px;
+      margin-bottom: 7px;
+    }
+
+    .quick-btn small {
+      display: block;
+      font-size: 11px;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .custom-entry {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .custom-entry input {
+      flex: 1;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-heading h2 {
+      font-size: 19px;
+    }
+
+    .small-btn {
+      color: var(--dark-blue);
+      background: var(--light-blue);
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .history {
+      margin-top: 22px;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 13px;
+      background: #f8fbfe;
+      border: 1px solid #edf3f8;
+      border-radius: 14px;
+    }
+
+    .history-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--light-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+    }
+
+    .history-details {
+      flex: 1;
+    }
+
+    .history-details strong {
+      font-size: 14px;
+    }
+
+    .history-details p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .history-amount {
+      font-weight: 750;
+      color: var(--dark-blue);
+      font-size: 14px;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      text-align: center;
+      padding: 28px 10px;
+      background: #f8fbfe;
+      border-radius: 14px;
+      line-height: 1.7;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      margin-top: 22px;
+    }
+
+    .tip-box {
+      background: linear-gradient(120deg, #eaf6ff, #f2faff);
+      border: 1px solid #dcefff;
+      border-radius: 18px;
+      padding: 22px;
+      margin-top: 22px;
+    }
+
+    .tip-box h3 {
+      margin-bottom: 9px;
+      font-size: 16px;
+    }
+
+    .tip-box p {
+      font-size: 14px;
+      color: #57718a;
+      line-height: 1.7;
+    }
+
+    .reminder {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #fff9e9;
+      color: #84651b;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .reminder input {
+      width: 17px;
+      margin-top: 3px;
+      accent-color: var(--blue);
+    }
+
+    .reset-btn {
+      background: #fff0f0;
+      color: #bb4141;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 25px 15px 35px;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translate(-50%, 20px);
+      background: #18334d;
+      color: white;
+      padding: 13px 20px;
+      border-radius: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.25s;
+      font-size: 14px;
+      z-index: 10;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 760px) {
+      header {
+        padding: 15px 5%;
+      }
+
+      main {
+        padding: 30px 15px 45px;
+      }
+
+      .dashboard,
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 22px 18px;
+      }
+
+      .progress-area {
+        gap: 18px;
+      }
+
+      .water-circle {
+        width: 155px;
+        height: 155px;
+      }
+
+      .percentage {
+        font-size: 28px;
+      }
+
+      .stat-number {
+        font-size: 25px;
+      }
+
+      .goal-row {
+        flex-wrap: wrap;
+      }
+
+      .goal-row label {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .progress-area {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stats {
+        width: 100%;
+      }
+
+      .quick-buttons {
+        gap: 6px;
+      }
+
+      .quick-btn {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <span class="logo-icon">💧</span>
+      HydroTrack
+    </div>
+    <div class="date" id="currentDate"></div>
+  </header>
+
+  <main>
+    <section class="welcome">
+      <h1>Stay hydrated, stay healthy! 💙</h1>
+      <p>Every sip counts. Track your water intake and build a healthy hydration habit.</p>
+    </section>
+
+    <section class="dashboard">
+
+      <!-- DAILY PROGRESS -->
+      <div class="card">
+        <h2 class="card-title">Today's progress</h2>
+        <p class="subtitle">Keep track of the water you drink throughout the day.</p>
+
+        <div class="progress-area">
+          <div class="water-circle">
+            <div class="water-fill" id="waterFill"></div>
+            <div class="circle-content">
+              <div class="percentage" id="percentage">0%</div>
+              <div class="circle-label">of daily goal</div>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat-label">Water consumed</div>
+            <div class="stat-number">
+              <span id="totalIntake">0</span>
+              <span>ml</span>
+            </div>
+
+            <div class="stat-divider"></div>
+
+            <div class="stat-label">Daily goal</div>
+            <div class="stat-number">
+              <span id="goalDisplay">2000</span>
+              <span>ml</span>
+            </div>
+
+            <div class="stat-divider"></div>
+
+            <div class="stat-label">Remaining to goal</div>
+            <div class="stat-number">
+              <span id="remaining">2000</span>
+              <span>ml</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="progress-caption">
+          <span id="progressMessage">Let's get started!</span>
+          <span id="progressNumbers">0 / 2000 ml</span>
+        </div>
+
+        <div class="goal-row">
+          <label for="goalInput">Customize your daily goal (ml)</label>
+          <input
+            type="number"
+            id="goalInput"
+            min="1"
+            max="10000"
+            value="2000"
+          >
+          <button class="primary-btn" id="saveGoal">Save goal</button>
+        </div>
+      </div>
+
+      <!-- ADD WATER -->
+      <div class="card">
+        <h2 class="card-title">Add your water 💦</h2>
+        <p class="subtitle">Choose an amount to log your next drink.</p>
+
+        <div class="quick-buttons">
+          <button class="quick-btn" data-amount="150">
+            <span class="cup">🥛</span>
+            150 ml
+            <small>Small glass</small>
+          </button>
+
+          <button class="quick-btn" data-amount="250">
+            <span class="cup">🥤</span>
+            250 ml
+            <small>Regular glass</small>
+          </button>
+
+          <button class="quick-btn" data-amount="500">
+            <span class="cup">🧴</span>
+            500 ml
+            <small>Water bottle</small>
+          </button>
+        </div>
+
+        <div class="stat-divider"></div>
+
+        <p class="card-title" style="font-size:15px">Enter a custom amount</p>
+
+        <div class="custom-entry">
+          <input
+            type="number"
+            id="customAmount"
+            min="1"
+            max="5000"
+            placeholder="Amount in ml"
+          >
+          <button class="primary-btn" id="addCustom">Add +</button>
+        </div>
+
+        <div class="tip-box">
+          <h3>🌊 Little reminder</h3>
+          <p>
+            Keep a water bottle nearby and take sips regularly.
+            Your hydration needs depend on your activity, the weather,
+            and your individual needs.
+          </p>
+        </div>
+
+        <label class="reminder">
+          <input type="checkbox" id="reminderCheck">
+          <span>
+            <strong>Gentle reminder</strong><br>
+            Show a reminder on this page to take a water break.
+            This does not send notifications when the page is closed.
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="card history">
+      <div class="section-heading">
+        <div>
+          <h2>Today's water history</h2>
+          <p class="subtitle" style="margin-top:6px">
+            See all the drinks you've logged today.
+          </p>
+        </div>
+        <button class="reset-btn" id="resetDay">Reset today</button>
+      </div>
+
+      <div class="history-list" id="historyList">
+        <div class="empty-state">
+          <div style="font-size:32px; margin-bottom:8px">🥛</div>
+          No water logged yet. Add your first drink!
+        </div>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <div class="card">
+        <h2 class="card-title">Your hydration journey ✨</h2>
+        <p class="subtitle" style="margin-top:10px">
+          Small, consistent habits can make it easier to stay hydrated.
+          Listen to your body's thirst signals and drink more when you
+          need it, such as during hot weather or physical activity.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Today's summary 📊</h2>
+        <div class="stat-divider"></div>
+        <div class="stat-label">Number of drinks logged</div>
+        <div class="stat-number"><span id="drinkCount">0</span></div>
+
+        <div class="stat-divider"></div>
+        <div class="stat-label">Average amount per drink</div>
+        <div class="stat-number"><span id="averageDrink">0</span><span> ml</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>💧 HydroTrack — One sip at a time.</p>
+    <p>
+      Your daily goal is customizable and is not medical advice.
+      Hydration needs vary from person to person.
+    </p>
+    <p>Water intake is saved locally in this browser.</p>
+  </footer>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "hydrotrack_data_v1";
+
+    const today = () => {
+      const now = new Date();
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, "0"),
+        String(now.getDate()).padStart(2, "0")
+      ].join("-");
+    };
+
+    function freshData() {
+      return {
+        date: today(),
+        goal: 2000,
+        entries: []
+      };
+    }
+
+    function loadData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+        if (
+          saved &&
+          saved.date === today() &&
+          Array.isArray(saved.entries) &&
+          Number.isFinite(saved.goal)
+        ) {
+          return saved;
+        }
+      } catch (error) {
+        console.warn("Could not load saved tracker data.");
+      }
+
+      return freshData();
+    }
+
+    let data = loadData();
+    let toastTimeout;
+
+    const $ = id => document.getElementById(id);
+
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (error) {
+        showToast("Could not save data in this browser.");
+      }
+    }
+
+    function formatDate() {
+      $("currentDate").textContent =
+        new Date().toLocaleDateString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        });
+    }
+
+    function getTotal() {
+      return data.entries.reduce((sum, entry) => sum + entry.amount, 0);
+    }
+
+    function render() {
+      const total = getTotal();
+      const goal = data.goal;
+      const percentage = Math.min(100, Math.round((total / goal) * 100));
+      const remaining = Math.max(0, goal - total);
+
+      $("totalIntake").textContent = total.toLocaleString();
+      $("goalDisplay").textContent = goal.toLocaleString();
+      $("remaining").textContent = remaining.toLocaleString();
+      $("percentage").textContent = percentage + "%";
+      $("goalInput").value = goal;
+
+      $("waterFill").style.height = percentage + "%";
+      $("progressBar").style.width = percentage + "%";
+      $("progressNumbers").textContent =
+        total.toLocaleString() + " / " + goal.toLocaleString() + " ml";
+
+      if (total === 0) {
+        $("progressMessage").textContent = "Let's get started!";
+      } else if (total < goal) {
+        $("progressMessage").textContent = "Keep it going! 💧";
+      } else {
+        $("progressMessage").textContent = "Daily goal reached! 🎉";
+      }
+
+      $("drinkCount").textContent = data.entries.length;
+
+      const average = data.entries.length
+        ? Math.round(total / data.entries.length)
+        : 0;
+
+      $("averageDrink").textContent = average.toLocaleString();
+
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const list = $("historyList");
+
+      if (data.entries.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div style="font-size:32px; margin-bottom:8px">🥛</div>
+            No water logged yet. Add your first drink!
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = "";
+
+      [...data.entries].reverse().forEach(entry => {
+        const item = document.createElement("div");
+        item.className = "history-item";
+
+        const icon = document.createElement("div");
+        icon.className = "history-icon";
+        icon.textContent = "💧";
+
+        const details = document.createElement("div");
+        details.className = "history-details";
+
+        const title = document.createElement("strong");
+        title.textContent = "Water";
+
+        const time = document.createElement("p");
+        time.textContent = new Date(entry.time).toLocaleTimeString(
+          undefined,
+          { hour: "numeric", minute: "2-digit" }
+        );
+
+        details.append(title, time);
+
+        const amount = document.createElement("div");
+        amount.className = "history-amount";
+        amount.textContent = "+" + entry.amount.toLocaleString() + " ml";
+
+        item.append(icon, details, amount);
+        list.appendChild(item);
+      });
+    }
+
+    function addWater(amount) {
+      if (!Number.isFinite(amount) || amount <= 0 || amount > 5000) {
+        showToast("Enter an amount between 1 and 5000 ml.");
+        return;
+      }
+
+      data.entries.push({
+        amount: Math.round(amount),
+        time: new Date().toISOString()
+      });
+
+      saveData();
+      render();
+      showToast(amount + " ml added successfully! 💧");
+    }
+
+    function showToast(message) {
+      const toast = $("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2400);
+    }
+
+    document.querySelectorAll("[data-amount]").forEach(button => {
+      button.addEventListener("click", () => {
+        addWater(Number(button.dataset.amount));
+      });
+    });
+
+    $("addCustom").addEventListener("click", () => {
+      const input = $("customAmount");
+      const amount = Number(input.value);
+
+      if (!input.value.trim()) {
+        showToast("Please enter a water amount.");
+        return;
+      }
+
+      if (!Number.isFinite(amount) || amount <= 0 || amount > 5000) {
+        showToast("Enter an amount between 1 and 5000 ml.");
+        return;
+      }
+
+      addWater(amount);
+      input.value = "";
+    });
+
+    $("customAmount").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        $("addCustom").click();
+      }
+    });
+
+    $("saveGoal").addEventListener("click", () => {
+      const input = $("goalInput");
+      const goal = Number(input.value);
+
+      if (!input.value.trim() || !Number.isFinite(goal) ||
+          goal < 1 || goal > 10000) {
+        showToast("Choose a goal between 1 and 10000 ml.");
+        input.value = data.goal;
+        return;
+      }
+
+      data.goal = Math.round(goal);
+      saveData();
+      render();
+      showToast("Your daily goal has been updated!");
+    });
+
+    $("resetDay").addEventListener("click", () => {
+      const confirmed = confirm(
+        "Reset today's water history? This cannot be undone."
+      );
+
+      if (!confirmed) return;
+
+      data.entries = [];
+      saveData();
+      render();
+      showToast("Today's water history has been reset.");
+    });
+
+    $("reminderCheck").addEventListener("change", event => {
+      if (event.target.checked) {
+        showToast("Remember to take a water break! 💧");
+      }
+    });
+
+    formatDate();
+    render();
+  </script>
+</body>
+</html>
